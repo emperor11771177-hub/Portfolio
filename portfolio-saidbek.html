@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saidbek — Veb sayt & Telegram Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --text: #e8e8f0;
+    --muted: #666680;
+    --card: #13131d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* LANGUAGE SWITCHER */
+  .lang-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 32px;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .lang-btns { display: flex; gap: 8px; }
+
+  .lang-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .lang-btn.active, .lang-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 120px 32px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    pointer-events: none;
+  }
+
+  .hero-glow2 {
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%);
+    bottom: 0; left: -50px;
+    pointer-events: none;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,229,255,0.07);
+    border: 1px solid rgba(0,229,255,0.2);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    letter-spacing: 1.5px;
+    margin-bottom: 32px;
+    width: fit-content;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .dot-pulse {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(52px, 10vw, 110px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    animation: fadeUp 0.7s ease 0.1s both;
+  }
+
+  h1 span {
+    display: block;
+    background: linear-gradient(135deg, var(--accent), #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-desc {
+    margin-top: 28px;
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 480px;
+    line-height: 1.7;
+    font-weight: 300;
+    animation: fadeUp 0.7s ease 0.2s both;
+  }
+
+  .hero-cta {
+    margin-top: 40px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.7s ease 0.3s both;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: #000;
+    padding: 14px 28px;
+    border-radius: 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+
+  .btn-primary:hover {
+    background: #00c4dc;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,229,255,0.25);
+  }
+
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 14px 28px;
+    border-radius: 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    text-decoration: none;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+
+  .btn-outline:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .hero-scroll {
+    margin-top: 80px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    animation: fadeUp 0.7s ease 0.4s both;
+  }
+
+  .scroll-line {
+    width: 40px;
+    height: 1px;
+    background: var(--muted);
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 100px 32px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    margin-bottom: 48px;
+  }
+
+  /* SERVICES */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .service-card {
+    background: var(--card);
+    padding: 40px 36px;
+    transition: background 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transform: scaleX(0);
+    transition: transform 0.3s;
+    transform-origin: left;
+  }
+
+  .service-card:hover::before { transform: scaleX(1); }
+  .service-card:hover { background: #161622; }
+
+  .service-icon {
+    font-size: 36px;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .service-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .service-desc {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  .service-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    background: rgba(0,229,255,0.07);
+    border: 1px solid rgba(0,229,255,0.15);
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+  }
+
+  /* WORKS */
+  .works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  .work-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+
+  .work-card:hover {
+    border-color: rgba(0,229,255,0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+  }
+
+  .work-thumb {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .work-thumb-1 { background: linear-gradient(135deg, #0d1f2d, #1a3a4a); }
+  .work-thumb-2 { background: linear-gradient(135deg, #1a0d2e, #2d1a4a); }
+  .work-thumb-3 { background: linear-gradient(135deg, #0d2d1a, #1a4a2d); }
+
+  .work-thumb::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, var(--card) 100%);
+  }
+
+  .work-info { padding: 20px; }
+
+  .work-type {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .work-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .work-detail {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* PRICING */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  .price-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 32px 28px;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .price-card.featured {
+    border-color: var(--accent);
+    background: rgba(0,229,255,0.04);
+  }
+
+  .price-card.featured::after {
+    content: attr(data-badge);
+    position: absolute;
+    top: -10px; right: 20px;
+    background: var(--accent);
+    color: #000;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+  }
+
+  .price-card:hover:not(.featured) {
+    border-color: rgba(0,229,255,0.2);
+    transform: translateY(-2px);
+  }
+
+  .price-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  .price-amount {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .price-currency {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  .price-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .price-features li {
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .price-features li::before {
+    content: '→';
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+  }
+
+  /* CONTACT */
+  .contact-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 56px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .contact-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
+  }
+
+  .contact-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+  }
+
+  .contact-sub {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 36px;
+    line-height: 1.6;
+  }
+
+  .tg-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #229ED9;
+    color: #fff;
+    padding: 16px 36px;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(34,158,217,0.3);
+  }
+
+  .tg-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(34,158,217,0.4);
+  }
+
+  .tg-icon {
+    width: 20px; height: 20px;
+    fill: white;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 32px;
+    border-top: 1px solid var(--border);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .lang-bar { padding: 14px 20px; }
+    .hero { padding: 100px 20px 60px; }
+    section { padding: 60px 20px; }
+    .contact-box { padding: 36px 24px; }
+    h1 { letter-spacing: -2px; }
+  }
+
+  /* HIDDEN LANG */
+  [data-uz], [data-ru] { display: none; }
+  .lang-uz [data-uz] { display: block; }
+  .lang-uz [data-uz-inline] { display: inline; }
+  .lang-ru [data-ru] { display: block; }
+  .lang-ru [data-ru-inline] { display: inline; }
+</style>
+</head>
+<body class="lang-uz">
+
+<!-- LANGUAGE BAR -->
+<nav class="lang-bar">
+  <div class="logo">SAIDBEK.DEV</div>
+  <div class="lang-btns">
+    <button class="lang-btn active" onclick="setLang('uz')">UZ</button>
+    <button class="lang-btn" onclick="setLang('ru')">RU</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+
+  <div class="hero-badge">
+    <div class="dot-pulse"></div>
+    <span data-uz-inline>Buyurtma qabul qilinadi</span>
+    <span data-ru-inline>Принимаю заказы</span>
+  </div>
+
+  <h1>
+    Saidbek
+    <span data-uz-inline>Murodov</span>
+    <span data-ru-inline>Муродов</span>
+  </h1>
+
+  <p class="hero-desc">
+    <span data-uz-inline>Biznesingiz uchun zamonaviy veb-saytlar va Telegram botlar yasayman. Tez, arzon, sifatli.</span>
+    <span data-ru-inline>Создаю современные сайты и Telegram боты для вашего бизнеса. Быстро, доступно, качественно.</span>
+  </p>
+
+  <div class="hero-cta">
+    <a href="https://t.me/MURODOV_S77" target="_blank" class="btn-primary">
+      ✈ Telegram
+    </a>
+    <a href="#services" class="btn-outline">
+      <span data-uz-inline>Xizmatlar →</span>
+      <span data-ru-inline>Услуги →</span>
+    </a>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span data-uz-inline>PASTGA AYLANING</span>
+    <span data-ru-inline>ПРОКРУТИТЕ ВНИЗ</span>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="section-label reveal">
+    <span data-uz-inline>Xizmatlar</span>
+    <span data-ru-inline>Услуги</span>
+  </div>
+
+  <h2 class="reveal">
+    <span data-uz-inline>Nima yasab<br>bera olaman?</span>
+    <span data-ru-inline>Что я могу<br>создать?</span>
+  </h2>
+
+  <div class="services-grid reveal">
+    <div class="service-card">
+      <span class="service-icon">🌐</span>
+      <div class="service-title">
+        <span data-uz-inline>Veb-sayt</span>
+        <span data-ru-inline>Веб-сайт</span>
+      </div>
+      <p class="service-desc">
+        <span data-uz-inline>Sizning biznesingiz uchun chiroyli va tez ishlayodigan sayt. Telefon va kompyuterda mukammal ko'rinadi.</span>
+        <span data-ru-inline>Красивый и быстрый сайт для вашего бизнеса. Отлично выглядит на телефоне и компьютере.</span>
+      </p>
+      <div class="service-tags">
+        <span class="tag">Restoran</span>
+        <span class="tag">Salon</span>
+        <span class="tag">Do'kon</span>
+        <span class="tag">Portfolio</span>
+      </div>
+    </div>
+
+    <div class="service-card">
+      <span class="service-icon">🤖</span>
+      <div class="service-title">Telegram Bot</div>
+      <p class="service-desc">
+        <span data-uz-inline>Buyurtma qabul qiluvchi, narx ko'rsatuvchi yoki mijozlarga javob beruvchi Telegram bot. 24/7 ishlaydi.</span>
+        <span data-ru-inline>Бот для приёма заказов, показа цен или ответов клиентам. Работает 24/7 без перерывов.</span>
+      </p>
+      <div class="service-tags">
+        <span class="tag">Buyurtma</span>
+        <span class="tag">Menyu</span>
+        <span class="tag">Katalog</span>
+        <span class="tag">FAQ</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- WORKS -->
+<section id="works">
+  <div class="section-label reveal">
+    <span data-uz-inline>Ishlar namunasi</span>
+    <span data-ru-inline>Примеры работ</span>
+  </div>
+
+  <h2 class="reveal">
+    <span data-uz-inline>Portfolio</span>
+    <span data-ru-inline>Портфолио</span>
+  </h2>
+
+  <div class="works-grid reveal">
+    <div class="work-card">
+      <div class="work-thumb work-thumb-1">🍽️</div>
+      <div class="work-info">
+        <div class="work-type">
+          <span data-uz-inline>Veb-sayt</span>
+          <span data-ru-inline>Веб-сайт</span>
+        </div>
+        <div class="work-name">
+          <span data-uz-inline>Restoran sayt</span>
+          <span data-ru-inline>Сайт ресторана</span>
+        </div>
+        <p class="work-detail">
+          <span data-uz-inline>Menyu, bronlash, joylashuv — barchasi bir saytda</span>
+          <span data-ru-inline>Меню, бронирование, локация — всё на одном сайте</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="work-card">
+      <div class="work-thumb work-thumb-2">🤖</div>
+      <div class="work-info">
+        <div class="work-type">Telegram Bot</div>
+        <div class="work-name">
+          <span data-uz-inline>Buyurtma boti</span>
+          <span data-ru-inline>Бот для заказов</span>
+        </div>
+        <p class="work-detail">
+          <span data-uz-inline>Avtomatik buyurtma qabul qilish va adminга xabar yuborish</span>
+          <span data-ru-inline>Автоматический приём заказов и уведомление администратора</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="work-card">
+      <div class="work-thumb work-thumb-3">💆</div>
+      <div class="work-info">
+        <div class="work-type">
+          <span data-uz-inline>Veb-sayt</span>
+          <span data-ru-inline>Веб-сайт</span>
+        </div>
+        <div class="work-name">
+          <span data-uz-inline>Güzellik saloni</span>
+          <span data-ru-inline>Салон красоты</span>
+        </div>
+        <p class="work-detail">
+          <span data-uz-inline>Xizmatlar, narxlar va online yozilish imkoniyati</span>
+          <span data-ru-inline>Услуги, цены и возможность онлайн записи</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="section-label reveal">
+    <span data-uz-inline>Narxlar</span>
+    <span data-ru-inline>Цены</span>
+  </div>
+
+  <h2 class="reveal">
+    <span data-uz-inline>Hamyonbop<br>narxlar</span>
+    <span data-ru-inline>Доступные<br>цены</span>
+  </h2>
+
+  <div class="pricing-grid reveal">
+    <div class="price-card">
+      <div class="price-name">
+        <span data-uz-inline>Boshlang'ich</span>
+        <span data-ru-inline>Стартовый</span>
+      </div>
+      <div class="price-amount">500K</div>
+      <div class="price-currency">
+        <span data-uz-inline>so'mdan</span>
+        <span data-ru-inline>сум от</span>
+      </div>
+      <ul class="price-features">
+        <li data-uz>1 sahifali sayt</li>
+        <li data-ru>Одностраничный сайт</li>
+        <li data-uz>Telefon uchun moslashgan</li>
+        <li data-ru>Адаптация под телефон</li>
+        <li data-uz>3 kun ichida tayyor</li>
+        <li data-ru>Готово за 3 дня</li>
+      </ul>
+    </div>
+
+    <div class="price-card featured" data-badge="TOP">
+      <div class="price-name">
+        <span data-uz-inline>Standart</span>
+        <span data-ru-inline>Стандарт</span>
+      </div>
+      <div class="price-amount">1.2M</div>
+      <div class="price-currency">
+        <span data-uz-inline>so'mdan</span>
+        <span data-ru-inline>сум от</span>
+      </div>
+      <ul class="price-features">
+        <li data-uz>Ko'p sahifali sayt</li>
+        <li data-ru>Многостраничный сайт</li>
+        <li data-uz>Chiroyli dizayn</li>
+        <li data-ru>Красивый дизайн</li>
+        <li data-uz>Kontakt forma</li>
+        <li data-ru>Контактная форма</li>
+        <li data-uz>5 kun ichida tayyor</li>
+        <li data-ru>Готово за 5 дней</li>
+      </ul>
+    </div>
+
+    <div class="price-card">
+      <div class="price-name">Telegram Bot</div>
+      <div class="price-amount">800K</div>
+      <div class="price-currency">
+        <span data-uz-inline>so'mdan</span>
+        <span data-ru-inline>сум от</span>
+      </div>
+      <ul class="price-features">
+        <li data-uz>Buyurtma qabul qilish</li>
+        <li data-ru>Приём заказов</li>
+        <li data-uz>Admin panel</li>
+        <li data-ru>Панель администратора</li>
+        <li data-uz>Katalog / menyu</li>
+        <li data-ru>Каталог / меню</li>
+        <li data-uz>4 kun ichida tayyor</li>
+        <li data-ru>Готово за 4 дня</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-box reveal">
+    <h2 class="contact-title">
+      <span data-uz-inline>Gaplashaylik! 💬</span>
+      <span data-ru-inline>Давайте поговорим! 💬</span>
+    </h2>
+    <p class="contact-sub">
+      <span data-uz-inline>Loyihangiz haqida gaplashing — bepul maslahat beraman.<br>Telegram orqali yozing, tez javob beraman.</span>
+      <span data-ru-inline>Расскажите о вашем проекте — дам бесплатную консультацию.<br>Пишите в Telegram, отвечу быстро.</span>
+    </p>
+    <a href="https://t.me/MURODOV_S77" target="_blank" class="tg-btn">
+      <svg class="tg-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+      </svg>
+      @MURODOV_S77
+    </a>
+  </div>
+</section>
+
+<footer>
+  <span data-uz-inline>© 2025 Saidbek Murodov — Buxoro, O'zbekiston</span>
+  <span data-ru-inline>© 2025 Сайдбек Муродов — Бухара, Узбекистан</span>
+</footer>
+
+<script>
+  // Language switcher
+  function setLang(lang) {
+    document.body.className = 'lang-' + lang;
+    document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      if (btn.textContent === lang.toUpperCase()) btn.classList.add('active');
+    });
+  }
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
